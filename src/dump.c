@@ -2294,7 +2294,7 @@ static void jl_insert_methods(jl_array_t *list)
     }
 }
 
-extern jl_array_t *_jl_debug_method_invalidation;
+extern jl_array_t *_jl_debug_method_invalidation JL_GLOBALLY_ROOTED;
 
 // verify that these edges intersect with the same methods as before
 static void jl_verify_edges(jl_array_t *targets, jl_array_t **pvalids)
@@ -2349,7 +2349,7 @@ static void jl_insert_backedges(jl_array_t *list, jl_array_t *targets)
     size_t i, l = jl_array_len(list);
     jl_array_t *valids = NULL;
     jl_value_t *loctag = NULL;
-    JL_GC_PUSH3(&valids, &_jl_debug_method_invalidation, &loctag);
+    JL_GC_PUSH2(&valids, &loctag);
     jl_verify_edges(targets, &valids);
     for (i = 0; i < l; i += 2) {
         jl_method_instance_t *caller = (jl_method_instance_t*)jl_array_ptr_ref(list, i);
