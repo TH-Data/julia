@@ -2348,7 +2348,8 @@ static void jl_insert_backedges(jl_array_t *list, jl_array_t *targets)
     // map(enable, ((list[i] => targets[list[i + 1] .* 2]) for i in 1:2:length(list) if all(valids[list[i + 1]])))
     size_t i, l = jl_array_len(list);
     jl_array_t *valids = NULL;
-    JL_GC_PUSH1(&valids);
+    jl_value_t *loctag = NULL;
+    JL_GC_PUSH3(&valids, &_jl_debug_method_invalidation, &loctag);
     jl_verify_edges(targets, &valids);
     for (i = 0; i < l; i += 2) {
         jl_method_instance_t *caller = (jl_method_instance_t*)jl_array_ptr_ref(list, i);
@@ -2388,7 +2389,9 @@ static void jl_insert_backedges(jl_array_t *list, jl_array_t *targets)
         else {
             if (_jl_debug_method_invalidation) {
                 jl_array_ptr_1d_push(_jl_debug_method_invalidation, (jl_value_t*)caller);
-                jl_array_ptr_1d_push(_jl_debug_method_invalidation, jl_cstr_to_string("insert_backedges"));
+                loctag = jl_cstr_to_string("insert_backedges");
+                jl_gc_wb(_jl_debug_method_invalidation, loctag);
+                jl_array_ptr_1d_push(_jl_debug_method_invalidation, loctag);
             }
         }
     }
